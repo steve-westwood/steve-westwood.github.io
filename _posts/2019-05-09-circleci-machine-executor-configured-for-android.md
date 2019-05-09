@@ -156,7 +156,7 @@ Let's install the React Native required bits, namely upgrade to NodeJS 8 so I ca
                 sudo apt-get update && sudo apt-get install yarn
 ```
 
-You can then build your Android Apps with `./gradlew assembleRelease --no-daemon --max-workers 2` or try using Fastlane for autmated uploads to 
+You can then build your Android Apps with `./gradlew assembleRelease --no-daemon --max-workers 2` or try using Fastlane for autmated uploads to Android Playstore :rocket:
 
 Thank you for reading, hope this blog post helps some of you! :+1:
 

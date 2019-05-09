@@ -6,3 +6,5 @@ plugins:
   - jemoji
 gems:
   - jekyll-inline-svg
+svg:
+  optimize: true
