@@ -40,7 +40,7 @@ But don't despair, there is another way...
 
 Luckily CircleCi suite of executors contains a more powerful agent, and we can use it (with a bit of configuration) in the standard plan!
 
-![CircleCi's Machine Executor](https://https://steve-westwood.github.io/images/machine_executor.png)
+![CircleCi's Machine Executor](https://steve-westwood.github.io/images/machine_executor.png)
 
 I present to you the [machine executor](https://circleci.com/docs/2.0/executor-types/#using-machine) from CircleCi which has 8GB of RAM! :tada:
 
@@ -50,7 +50,7 @@ I present to you the [machine executor](https://circleci.com/docs/2.0/executor-t
 
 > This configuration will be for Android and React-Native
 
-First of all lets selector the machine executor, and environment variables we'll use later.
+First of all lets select the machine executor, and environment variables we'll use later.
 
 ```yaml
 version: 2
@@ -60,6 +60,44 @@ jobs:
             BASH_ENV: envrc
         machine:
             enabled: true
+```
+
+The main software we need is the Android Studio SDK to build the App. At current time of writing the SDK version is v28 (Android 9 API), and the download of the SDK tools can be found (on the Android Studio downloads page)[https://developer.android.com/studio/#downloads].
+
+> As an aside I can see that you used to be able to download these tools using the **apt** utility, so I'm expecting the method of getting these tools to chnage in the future as Google changes it mind over the best delivery mechanism.
+
+```yaml
+            - run:
+                  name: Download android sdk
+                  command: |
+                      cd .. 
+                      mkdir android-sdk
+                      cd android-sdk
+                      wget https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip
+                      unzip sdk-tools-linux-4333796.zip
+```
+
+Now we can add these tools to `$PATH` environment variable so they will be usable in later bash commands.
+
+```yaml
+
+            - run:
+                  name: Set env vars for android sdk tools
+                  command: |
+                      echo '
+                      export ANDROID_HOME=$HOME/android-sdk
+                      export PATH=$PATH:$HOME/android-sdk/tools/bin
+                      export PATH=$PATH:$HOME/android-sdk/platform-tools' >> envrc
+```
+
+Now we have the SDK software available on the machine executor, but there is _one_ last hurdle before they can be used successfully to build our project. Google wants you to accept their terms and conditions before issuing a license to use these command line tools, so we have to **accept all license** via the command line before going forward. This was a bit tricky but luckily I found [this conversation on CircleCi's forum](https://discuss.circleci.com/t/android-platform-28-sdk-license-not-accepted/27768/11) which had the solution (to pipe yes to the accept licenses command and return a non-exit response).
+
+```yaml
+            - run:
+                  name: Accept sdk licenses
+                  command: |
+                      yes | sdkmanager --licenses || exit 0
+                      yes | sdkmanager --update || exit 0
 ```
 
 
