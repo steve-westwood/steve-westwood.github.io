@@ -42,9 +42,9 @@ Luckily CircleCi suite of executors contains a more powerful agent, and we can u
 
 ![CircleCi's Machine Executor](https://steve-westwood.github.io/images/machine_executor.png)
 
-I present to you the [machine executor](https://circleci.com/docs/2.0/executor-types/#using-machine) from CircleCi which has 8GB of RAM! :tada:
+I present to you the [machine executor](https://circleci.com/docs/2.0/executor-types/#using-machine) which has 8GB of RAM! :tada:
 
-...but doesn't have the Android SDK software loaded :-1:
+...but doesn't have the Android SDK loaded :-1:
 
 ## So lets configure it so it has ALL the stuff
 
