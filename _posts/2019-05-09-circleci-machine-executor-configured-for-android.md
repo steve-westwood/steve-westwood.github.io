@@ -50,7 +50,21 @@ I present to you the [machine executor](https://circleci.com/docs/2.0/executor-t
 
 > This configuration will be for Android and React-Native
 
-First of all lets select the machine executor, and environment variables we'll use later.
+Let's briefly talk about what software the machine executor *does have* installed as standard that will help us:
+
+* Ubuntu 14.04
+* Java
+* wget
+* zip/unzip
+* git
+
+...and to help React Native
+
+* node v6.10
+* python
+* ruby
+
+First of all lets select the machine executor, and environment variables we'll use later, and checkout our project.
 
 ```yaml
 version: 2
@@ -60,9 +74,11 @@ jobs:
             BASH_ENV: envrc
         machine:
             enabled: true
+        steps:
+            - checkout
 ```
 
-The main software we need is the Android Studio SDK to build the App. At current time of writing the SDK version is v28 (Android 9 API), and the download of the SDK tools can be found (on the Android Studio downloads page)[https://developer.android.com/studio/#downloads].
+The main software we need is the Android Studio SDK to build the App. At current time of writing the SDK version is v28 (Android 9 API), and the download of the SDK tools can be found [on the Android Studio downloads page](https://developer.android.com/studio/#downloads).
 
 > As an aside I can see that you used to be able to download these tools using the **apt** utility, so I'm expecting the method of getting these tools to chnage in the future as Google changes it mind over the best delivery mechanism.
 
@@ -80,7 +96,6 @@ The main software we need is the Android Studio SDK to build the App. At current
 Now we can add these tools to `$PATH` environment variable so they will be usable in later bash commands.
 
 ```yaml
-
             - run:
                   name: Set env vars for android sdk tools
                   command: |
@@ -90,7 +105,7 @@ Now we can add these tools to `$PATH` environment variable so they will be usabl
                       export PATH=$PATH:$HOME/android-sdk/platform-tools' >> envrc
 ```
 
-Now we have the SDK software available on the machine executor, but there is _one_ last hurdle before they can be used successfully to build our project. Google wants you to accept their terms and conditions before issuing a license to use these command line tools, so we have to **accept all license** via the command line before going forward. This was a bit tricky but luckily I found [this conversation on CircleCi's forum](https://discuss.circleci.com/t/android-platform-28-sdk-license-not-accepted/27768/11) which had the solution (to pipe yes to the accept licenses command and return a non-exit response).
+Now we have the SDK software available on the machine executor, but there is _one_ last hurdle before they can be used successfully to build our project. Google wants you to accept their terms and conditions before issuing a license to use these command line tools, so we have to **accept all license** via the command line before going forward. This was a bit tricky but luckily I found [this conversation on CircleCi's forum](https://discuss.circleci.com/t/android-platform-28-sdk-license-not-accepted/27768/11) which had the solution (to pipe 'yes' to the accept licenses command and return a non-exit response).
 
 ```yaml
             - run:
@@ -100,6 +115,50 @@ Now we have the SDK software available on the machine executor, but there is _on
                       yes | sdkmanager --update || exit 0
 ```
 
+So there you go, that's all you need to build your Android app project, but since my project also has React-Native, I'll share how to get that running too...
+
+### Raact Native supporting software
+
+Let's install the React Native required bits, namely upgrade to NodeJS 8 so I can then use Yarn, and Watchman for the ReactNative packager.
+
+```yaml
+            - run:
+                  name: Install watchman
+                  command: |
+                      cd ~
+                      git clone https://github.com/facebook/watchman.git
+                      cd watchman/
+                      git checkout v4.7.0
+                      sudo apt-get install -y autoconf automake build-essential python-dev
+                      ./autogen.sh 
+                      ./configure 
+                      make
+                      sudo make install
+
+                      watchman --version
+                      echo 999999 | sudo tee -a /proc/sys/fs/inotify/max_user_watches  && echo 999999 | sudo tee -a  /proc/sys/fs/inotify/max_queued_events && echo 999999 | sudo tee  -a /proc/sys/fs/inotify/max_user_instances && watchman  shutdown-server
+            - run:
+                  name: Install node@8.16.0 (need to install latest version of `yarn`)
+                  command: |
+                      set +e             
+                      curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.5/install.sh | bash
+                      export NVM_DIR="/opt/circleci/.nvm"
+                      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+                      nvm install v8.16.0
+                      nvm alias default v8.16.0
+                      echo 'export NVM_DIR="/opt/circleci/.nvm"' >> envrc
+                      echo "[ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\"" >> envrc
+            - run:
+                  name: Install yarn
+                  command: |
+                      curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+                      echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+                      sudo apt-get update && sudo apt-get install yarn
+```
+
+You can then build your Android Apps with `./gradlew assembleRelease --no-daemon --max-workers 2`
+
+Thank you for reading, hope this blog post helps some of you! :+1:
 
 
 
