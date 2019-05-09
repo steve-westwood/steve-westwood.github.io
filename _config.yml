@@ -1,5 +1,4 @@
-name: Steve Westwood's Blog
-markdown: kramdown
-permalink: /blog/:year/:month/:day/:title
+title: Disposable Development
+description: Some development things from Steve Westwood
 
 theme: jekyll-theme-minimal
