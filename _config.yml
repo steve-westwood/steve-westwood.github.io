@@ -4,3 +4,5 @@ description: Some development things from Steve Westwood
 theme: jekyll-theme-minimal
 plugins:
   - jemoji
+gems:
+  - jekyll-inline-svg
