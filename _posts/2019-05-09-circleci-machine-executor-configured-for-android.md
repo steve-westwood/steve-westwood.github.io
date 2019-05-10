@@ -32,7 +32,9 @@ Turns out this isn't that hard to do. A combination of Java having an overly gre
 
 ## The (CircleCi) Solution
 
-If all else fails, CircleCi says upgrade so that your project can use the [resource_class](https://circleci.com/docs/2.0/configuration-reference/#resource_class) feature (and a whole bunch of other cool stuff btw). Throw more memory at the problem! (At a small cost!) Trouble with this upgrade is that you can't just upgrade the problem Project. You have to pay _n_ dollars per project, and if you have a few dozen projects that cost will stack up, especially as at this point you probably only need the additional features to solve you single problem project.
+If all else fails, CircleCi says upgrade so that your project can use the [resource_class](https://circleci.com/docs/2.0/configuration-reference/#resource_class) feature (and a whole bunch of other cool stuff btw). Throw more memory at the problem! (At a small cost!)
+
+Trouble with this upgrade is that you can't just upgrade the problem Project. You have to pay _n_ dollars per project, and if you have a few dozen projects that cost will stack up, especially as, at this point, you probably only need the additional features to solve your single problem project.
 
 But don't despair, there is another way...
 
@@ -80,7 +82,7 @@ jobs:
 
 The main software we need is the Android Studio SDK to build the App. At current time of writing the SDK version is v28 (Android 9 API), and the download of the SDK tools can be found [on the Android Studio downloads page](https://developer.android.com/studio/#downloads).
 
-> As an aside I can see that you used to be able to download these tools using the **apt** utility, so I'm expecting the method of getting these tools to chnage in the future as Google changes it mind over the best delivery mechanism.
+> As an aside I can see that you used to be able to download these tools using the **apt** utility, so I'm expecting the method of getting these tools to change in the future as Google changes it mind over the best delivery mechanism.
 
 ```yaml
     - run:
@@ -105,7 +107,7 @@ Now we can add these tools to `$PATH` environment variable so they will be usabl
                 export PATH=$PATH:$HOME/android-sdk/platform-tools' >> envrc
 ```
 
-Now we have the SDK software available on the machine executor, but there is _one_ last hurdle before they can be used successfully to build our project. Google wants you to accept their terms and conditions before issuing a license to use these command line tools, so we have to **accept all license** via the command line before going forward. This was a bit tricky but luckily I found [this conversation on CircleCi's forum](https://discuss.circleci.com/t/android-platform-28-sdk-license-not-accepted/27768/11) which had the solution (to pipe 'yes' to the accept licenses command and return a non-exit response).
+Now we have the SDK software available on the machine executor, but there is _one_ last hurdle before they can be used successfully to build our project. Google wants you to accept their terms and conditions before issuing a license to use these command line tools, so we have to **accept all licenses** via the command line before going forward. This was a bit tricky, but luckily I found [this conversation on CircleCi's forum](https://discuss.circleci.com/t/android-platform-28-sdk-license-not-accepted/27768/11) which had the solution (to pipe 'yes' to the accept licenses command and return a non-exit response).
 
 ```yaml
     - run:
@@ -117,9 +119,9 @@ Now we have the SDK software available on the machine executor, but there is _on
 
 So there you go, that's all you need to build your Android app project, but since my project also has React-Native, I'll share how to get that running too...
 
-### Raact Native supporting software
+### React Native supporting software
 
-Let's install the React Native required bits, namely upgrade to NodeJS 8 so I can then use Yarn, and Watchman for the ReactNative packager.
+Let's install the React Native required bits, namely upgrade to NodeJS 8, so I can then use Yarn, and Watchman for the React Native packager.
 
 ```yaml
     - run:
@@ -156,7 +158,7 @@ Let's install the React Native required bits, namely upgrade to NodeJS 8 so I ca
                 sudo apt-get update && sudo apt-get install yarn
 ```
 
-You can then build your Android Apps with `./gradlew assembleRelease --no-daemon --max-workers 2` or try using Fastlane for autmated uploads to Android Playstore :rocket:
+You can then build your Android Apps with `./gradlew assembleRelease --no-daemon --max-workers 2` or [try using Fastlane](https://fastlane.tools/) for automated uploads to Android Playstore :rocket:
 
 Thank you for reading, hope this blog post helps some of you! :+1:
 
